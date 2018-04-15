@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
+    <property name="log_home" value="logs"/>
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>-->
+            <!--<pattern>[%-5p] [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] %logger{50} - %msg%n</pattern>-->
+            <pattern>[%-5p] [%d{yyyy-MM-dd HH:mm:ss}] [%thread] [%C{1}:%M:%L] %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 按照每天生成日志文件 -->
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--日志位置-->
+        <file>${log_home}/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${log_home}/app.log.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic. encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <!--[%-5p] [%d{yyyy-MM-dd HH:mm:ss}] [%C{1}:%M:%L] %m%n  %-5level-->
+            <pattern>[%-5p] [%d{yyyy-MM-dd HH:mm:ss}] [%thread] [%C{1}:%M:%L] %m%n</pattern>
+        </encoder>
+        <!--日志文件最大的大小-->
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>10MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>
+
+    <!--错误日志-->
+    <appender name="ERROR_DAILY_ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_home}/error.log</file>
+        <encoder>
+            <pattern>[%-5p] [%d{yyyy-MM-dd HH:mm:ss}] [%thread] [%C{1}:%M:%L] %m%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_home}/error.log.%d{yyyy-MM-dd_HH}</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>80GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 异步输出 -->
+    <appender name="ASYNC_ROLLING_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>512</queueSize>
+        <!--耗费性能  默认不开启-->
+        <includeCallerData>true</includeCallerData>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="ROLLING_FILE"/>
+    </appender>
+
+    <!-- 异步输出 -->
+    <appender name="ASYNC_ERROR_DAILY_ROLLING_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>512</queueSize>
+        <!--耗费性能  默认不开启-->
+        <includeCallerData>true</includeCallerData>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="ERROR_DAILY_ROLLING_FILE"/>
+    </appender>
+
+    <!--logger用来设置某一个包或者具体的某一个类的日志打印级别-->
+    <logger name="com.bob" level="DEBUG"/>
+
+
+    <!-- 日志输出级别 -->
+    <!--<root level="INFO,ERROR">-->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="ASYNC_ROLLING_FILE"/>
+        <appender-ref ref="ASYNC_ERROR_DAILY_ROLLING_FILE"/>
+    </root>
+</configuration>
